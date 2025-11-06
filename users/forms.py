@@ -24,7 +24,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('Имя', 'Фамилия', 'email', 'Пароль', 'Пароль2')
+        fields = ('first_name', 'last_name', 'email', 'password1', 'password2')
 
     
     def clean_email(self):
@@ -36,7 +36,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = None
+        user.username = user.email  # Используем email как username
         if commit:
             user.save()
         return user
@@ -51,8 +51,8 @@ class CustomUserLoginForm(AuthenticationForm):
 
      
     def clean(self):
-        email = self.cleaned_data.get('Имя пользователя/Никнейм')
-        password = self.cleaned_data.get('Пароль')
+        email = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
 
         if email and password:
             self.user_cache = authenticate(self.request, email=email, password=password)
@@ -66,7 +66,7 @@ class CustomUserLoginForm(AuthenticationForm):
 class CustomUserUpdateForm(forms.ModelForm):
     phone = forms.CharField(
         required=False,
-        validators=[RegexValidator(r'^\+?1?\d{9,15}₼', "Введите действительный номер телефона.")],
+        validators=[RegexValidator(r'^\+?1?\d{9,15}$', "Введите действительный номер телефона.")],
         widget=forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'PHONE NUMBER'})
     )
     first_name = forms.CharField(
@@ -87,9 +87,9 @@ class CustomUserUpdateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('Имя', 'Фамилия', 'email', 'Компания', 
-                  'Адрес', 'Адрес2', 'Город', 'Страна',
-                  'Провинция', 'Почтовый индекс', 'Телефон')
+        fields = ('first_name', 'last_name', 'email', 'company', 
+                  'address1', 'address2', 'city', 'country',
+                  'province', 'postal_code', 'phone')
         widgets = {
             'company': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'КОМПАНИЯ'}),
             'address1': forms.TextInput(attrs={'class': 'dotted-input w-full py-3 text-sm font-medium text-gray-900 placeholder-gray-500', 'placeholder': 'АДРЕС 1'}),
@@ -112,8 +112,8 @@ class CustomUserUpdateForm(forms.ModelForm):
         cleaned_data = super().clean()
         if not cleaned_data.get('email'):
             cleaned_data['email'] = self.instance.email
-        for field in ['Компания', 'Адрес', 'Адрес2', 'Город', 'Страна',
-                      'Провинция', 'Почтовый индекс', 'Телефон']:
+        for field in ['company', 'address1', 'address2', 'city', 'country',
+                      'province', 'postal_code', 'phone']:
             if cleaned_data.get(field):
                 cleaned_data[field] = strip_tags(cleaned_data[field])
         return cleaned_data
