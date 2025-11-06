@@ -1,81 +1,97 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout as auth_logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from django.contrib import messages
+from django.urls import reverse
 from django.http import HttpResponse
+from django.template.response import TemplateResponse
+from .forms import CustomUserCreationForm, CustomUserLoginForm, \
+    CustomUserUpdateForm
+from .models import CustomUser
+from django.contrib import messages
+from main.models import Product
+from orders.models import Order
+
 
 def register(request):
-    """Регистрация нового пользователя"""
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Аккаунт создан для {username}!')
-            return redirect('users:login')
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect('main:index')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'users/register.html', {'form': form})
 
+
 def login_view(request):
-    """Вход пользователя"""
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
+        form = CustomUserLoginForm(request=request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('main:index')
-        else:
-            messages.error(request, 'Неверное имя пользователя или пароль.')
-    return render(request, 'users/login.html')
+    else:
+        form = CustomUserLoginForm()
+    return render(request, 'users/login.html', {'form': form})
+    
 
-@login_required
+@login_required(login_url='/users/login')
 def profile_view(request):
-    """Профиль пользователя"""
-    return render(request, 'users/profile.html', {'user': request.user})
-
-@login_required
-def account_details(request):
-    """Детали аккаунта"""
-    return render(request, 'users/account_details.html', {'user': request.user})
-
-@login_required
-def edit_account_details(request):
-    """Редактирование деталей аккаунта"""
-    return render(request, 'users/edit_account_details.html', {'user': request.user})
-
-@login_required
-def update_account_details(request):
-    """Обновление деталей аккаунта"""
     if request.method == 'POST':
-        user = request.user
-        user.first_name = request.POST.get('first_name', '')
-        user.last_name = request.POST.get('last_name', '')
-        user.email = request.POST.get('email', '')
-        user.save()
-        messages.success(request, 'Данные аккаунта обновлены!')
-        return redirect('users:account_details')
-    return redirect('users:edit_account_details')
+        form = CustomUserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            if request.headers.get("HX-Request"):
+                return HttpResponse(headers={'HX-Redirect': reverse('users:profile')})
+            return redirect('users:profile')
+    else:
+        form = CustomUserUpdateForm(instance=request.user)
 
-def logout(request):
-    """Выход пользователя"""
-    auth_logout(request)
-    messages.success(request, 'Вы успешно вышли из системы.')
+    recommended_products = Product.objects.all().order_by('id')[:3]
+
+    return TemplateResponse(request, 'users/profile.html', {
+        'form': form,
+        'user': request.user,
+        'recommended_products': recommended_products
+    })
+
+
+@login_required(login_url='/users/login')
+def account_details(request):
+    user = CustomUser.objects.get(id=request.user.id)
+    return TemplateResponse(request, 'users/partials/account_details.html', {'user': user})
+
+
+@login_required(login_url='/users/login')
+def edit_account_details(request):
+    form = CustomUserUpdateForm(instance=request.user)
+    return TemplateResponse(request, 'users/partials/edit_account_details.html',
+                            {'user': request.user, 'form': form})
+
+
+@login_required(login_url='/users/login')
+def update_account_details(request):
+    if request.method == 'POST':
+        form = CustomUserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.clean()
+            user.save()
+            updated_user = CustomUser.objects.get(id=user.id)
+            request.user = updated_user
+            if request.headers.get('HX-Request'):
+                return TemplateResponse(request, 'users/partials/account_details.html', {'user': updated_user})
+            return TemplateResponse(request, 'users/partials/account_details.html', {'user': updated_user})
+        else:
+            return TemplateResponse(request, 'users/partials/edit_account_details.html', {'user': request.user, 'form': form})
+    if request.headers.get('HX-Request'):
+        return HttpResponse(headers={'HX-Redirect': reverse('user:profile')})
+    return redirect('users:profile')
+
+
+def logout_view(request):
+    logout(request)
+    if request.headers.get('HX-Request'):
+        return HttpResponse(headers={'HX-Redirect': reverse('main:index')})
     return redirect('main:index')
-
-@login_required
-def order_history(request):
-    """История заказов"""
-    # Здесь будет логика для получения заказов пользователя
-    orders = []  # Пока что пустой список
-    return render(request, 'users/order_history.html', {'orders': orders})
-
-@login_required
-def order_detail(request, order_id):
-    """Детали конкретного заказа"""
-    # Здесь будет логика для получения конкретного заказа
-    order = None  # Пока что None
-    return render(request, 'users/order_detail.html', {'order': order, 'order_id': order_id})
