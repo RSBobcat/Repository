@@ -1,4 +1,5 @@
-<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+    <div class="bg-white rounded-lg shadow-lg mx-4 lg:mx-16 p-6 lg:p-8">
     <!-- Breadcrumb -->
     <div class="mb-8">
         <nav class="text-sm text-gray-600">
@@ -73,7 +74,7 @@
                                value="{{ product_size.id }}"
                                data-size="{{ product_size.size.name }}"
                                {% if product_size.stock == 0 %}disabled{% endif %}
-                               {% if forloop.first and product_size.stock > 0 %}Проверено{% endif %}>
+                               {% if forloop.first and product_size.stock > 0 %}checked{% endif %}>
                         <label for="size-{{ product_size.id }}"
                                class="block border border-gray-300 py-2 px-3 text-sm font-medium text-center cursor-pointer hover:border-gray-900 transition-colors {% if product_size.stock == 0 %}opacity-50 cursor-not-allowed{% endif %}">
                             {{ product_size.size.name }}
@@ -92,7 +93,7 @@
             <!-- Add to Cart -->
             <div class="space-y-4">
                 <button id="add-to-cart-btn" 
-                        class="w-full bg-black text-white py-3 px-6 text-sm font-medium hover:bg-gray-800 transition-colors"
+                        class="w-full bg-teal-600 text-white py-3 px-6 text-sm font-medium hover:bg-teal-700 transition-colors"
                         onclick="addToCart()"
                         {% if not product.product_sizes.all %}disabled{% endif %}>
                     Добавить в корзину
@@ -169,10 +170,21 @@
     }
 </style>
 
-<script>
-    let selectedSize = null;
-    let selectedSizeId = null;
-
+    <script>
+    console.log('=== PRODUCT DEBUG ===');
+    console.log('Product: {{ product.name }}');
+    console.log('Product has sizes: {% if product.product_sizes.all %}true{% else %}false{% endif %}');
+    
+    // Use window object to avoid redeclaration errors during HTMX swaps
+    if (typeof window.selectedSize === 'undefined') {
+        window.selectedSize = null;
+        window.selectedSizeId = null;
+    } else {
+        // Reset values for new product
+        window.selectedSize = null;
+        window.selectedSizeId = null;
+    }
+    
     function changeMainImage(src) {
         const mainImg = document.querySelector('.aspect-square img');
         if (mainImg) {
@@ -184,42 +196,100 @@
         const sizeRadios = document.querySelectorAll('.size-radio');
         const checkedRadio = Array.from(sizeRadios).find(radio => radio.checked && !radio.disabled);
         if (checkedRadio) {
-            selectedSize = checkedRadio.dataset.size;
-            selectedSizeId = checkedRadio.value;
-            console.log('Updated Selected Size:', selectedSize, 'ID:', selectedSizeId);
+            window.selectedSize = checkedRadio.dataset.size;
+            window.selectedSizeId = checkedRadio.value;
+            console.log('Updated Selected Size:', window.selectedSize, 'ID:', window.selectedSizeId);
         } else {
-            selectedSize = null;
-            selectedSizeId = null;
+            window.selectedSize = null;
+            window.selectedSizeId = null;
             console.log('No valid size selected');
         }
     }
 
     function addToCart() {
         const productSlug = '{{ product.slug }}';
+        const addToCartUrl = `{% url 'cart:add_to_cart' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', productSlug);
+        console.log('=== ADD TO CART DEBUG ===');
         console.log('Product Slug:', productSlug);
+        console.log('Product Name:', '{{ product.name }}');
+        console.log('Add to Cart URL:', addToCartUrl);
         
-        // Update selected size before sending
-        updateSelectedSize();
-        console.log('Selected Size ID:', selectedSizeId);
+        // Check if product has sizes
+        const hasSizes = document.querySelectorAll('.size-radio').length > 0;
+        
+        if (hasSizes) {
+            // Update selected size before sending
+            updateSelectedSize();
+            console.log('Selected Size ID:', window.selectedSizeId);
 
-        if (!selectedSizeId) {
-            showNotification('Please select a size');
-            return;
+            if (!window.selectedSizeId) {
+                showNotification('Пожалуйста, выберите размер');
+                return;
+            }
         }
 
         let formData = new FormData();
-        formData.append('size_id', selectedSizeId);
+        if (window.selectedSizeId) {
+            formData.append('size_id', window.selectedSizeId);
+            console.log('Adding size_id to form:', window.selectedSizeId);
+        } else {
+            console.log('No size_id - product without sizes');
+        }
         formData.append('quantity', '1');
-        fetch(`{% url 'cart:add_to_cart' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', productSlug), {
+        
+        const csrfToken = getCookie('csrftoken');
+        console.log('CSRF Token:', csrfToken);
+        console.log('Form data contents:');
+        for (let pair of formData.entries()) {
+            console.log('  ', pair[0], ':', pair[1]);
+        }
+        fetch(addToCartUrl, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => {
             console.log('Response Status:', response.status);
-            return response.json();
+            console.log('Content-Type:', response.headers.get('content-type'));
+            
+            if (!response.ok) {
+                // Check if it's a CSRF error (403 Forbidden)
+                if (response.status === 403) {
+                    console.log('CSRF error detected, refreshing page...');
+                    window.location.reload();
+                    return;
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json().then(errorData => {
+                        console.log('Error Data:', errorData);
+                        console.log('Debug Info:', errorData.debug_info);
+                        throw new Error(errorData.error || 'Network response was not ok');
+                    });
+                } else {
+                    // If not JSON, get text content for debugging
+                    return response.text().then(errorText => {
+                        console.log('Error HTML:', errorText.substring(0, 500));
+                        throw new Error(`Server error (${response.status}): ${response.statusText}`);
+                    });
+                }
+            }
+            
+            // Check if successful response is JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    console.log('Non-JSON response:', text.substring(0, 500));
+                    throw new Error('Expected JSON response but got HTML');
+                });
+            }
         })
         .then(data => {
             console.log('Response Data:', data);
@@ -227,7 +297,7 @@
                 showNotification(data.error);
             } else {
                 updateHeaderCartCount(data.total_items);
-                showNotification(data.message);
+                showNotification(data.message || 'Товар добавлен в корзину');
                 htmx.ajax('GET', '{% url "cart:cart_modal" %}', {
                     target: '#cart-container',
                     swap: 'innerHTML'
@@ -235,8 +305,8 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            showNotification('Error adding to cart');
+            console.error('Full Error:', error);
+            showNotification(error.message || 'Ошибка добавления в корзину');
         });
     }
     
@@ -257,7 +327,7 @@
     
     function showNotification(message) {
         const notification = document.createElement('div');
-        notification.className = 'fixed top-20 right-4 bg-black text-white px-6 py-3 rounded shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+        notification.className = 'fixed top-20 right-4 bg-teal-600 text-white px-6 py-3 rounded shadow-lg z-50 transform translate-x-full transition-transform duration-300';
         notification.textContent = message;
         document.body.appendChild(notification);
         setTimeout(() => {
@@ -272,15 +342,31 @@
     }
 
     function initializeSizeRadios() {
+        // Reset selectedSizeId for new product
+        window.selectedSizeId = null;
+        window.selectedSize = null;
+        console.log('Reset selectedSizeId and selectedSize to null');
+        
         const sizeRadios = document.querySelectorAll('.size-radio');
         const addToCartBtn = document.getElementById('add-to-cart-btn');
         console.log('Size Radios Found:', sizeRadios.length);
+        console.log('Add to cart button found:', !!addToCartBtn);
+        
+        // Log current radio values for debugging
+        sizeRadios.forEach((radio, index) => {
+            console.log(`Radio ${index}: ID=${radio.value}, Size=${radio.dataset.size}, Checked=${radio.checked}, Disabled=${radio.disabled}`);
+        });
 
         if (sizeRadios.length === 0) {
-            console.log('No size radios available');
-            addToCartBtn.disabled = true;
-            addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            showNotification('No sizes available');
+            console.log('Product has no sizes - enabling add to cart button');
+            if (addToCartBtn) {
+                console.log('Button before:', addToCartBtn.disabled, addToCartBtn.className);
+                addToCartBtn.disabled = false;
+                addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                console.log('Button after:', addToCartBtn.disabled, addToCartBtn.className);
+            } else {
+                console.log('Add to cart button not found');
+            }
             return;
         }
 
@@ -289,22 +375,28 @@
 
         if (availableRadios.length === 0) {
             console.log('All sizes are out of stock');
-            addToCartBtn.disabled = true;
-            addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            showNotification('All sizes are out of stock');
+            if (addToCartBtn) {
+                addToCartBtn.disabled = true;
+                addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            showNotification('Все размеры отсутствуют');
             return;
         }
 
+        // Clear all previous selections first
+        sizeRadios.forEach(radio => {
+            radio.checked = false;
+        });
+        
         // Ensure at least one valid radio is checked
-        let checkedRadio = Array.from(sizeRadios).find(radio => radio.checked && !radio.disabled);
-        if (!checkedRadio && availableRadios.length > 0) {
+        if (availableRadios.length > 0) {
             availableRadios[0].checked = true;
-            checkedRadio = availableRadios[0];
-            console.log('Auto-checked first available radio:', checkedRadio.dataset.size, 'ID:', checkedRadio.value);
+            console.log('Auto-checked first available radio:', availableRadios[0].dataset.size, 'ID:', availableRadios[0].value);
         }
 
         // Update selected size
         updateSelectedSize();
+        console.log('After initialization - selectedSizeId:', window.selectedSizeId);
 
         // Add event listeners
         sizeRadios.forEach(radio => {
@@ -315,8 +407,10 @@
                 }
                 console.log('Radio Changed - Selected Size:', this.dataset.size, 'ID:', this.value);
                 updateSelectedSize();
-                addToCartBtn.disabled = false;
-                addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (addToCartBtn) {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             });
         });
     }
@@ -324,14 +418,33 @@
     document.addEventListener('DOMContentLoaded', initializeSizeRadios);
     document.addEventListener('htmx:afterSwap', initializeSizeRadios);
 
-    const productCards = document.querySelectorAll('.product-card');
-    productCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.transition = 'transform 0.3s ease';
+    // Initialize product card hover effects
+    function initializeProductCards() {
+        const productCards = document.querySelectorAll('.product-card');
+        productCards.forEach(card => {
+            // Remove existing listeners to avoid duplicates
+            card.removeEventListener('mouseenter', card.hoverEnter);
+            card.removeEventListener('mouseleave', card.hoverLeave);
+            
+            // Define functions and store references
+            card.hoverEnter = function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.3s ease';
+            };
+            
+            card.hoverLeave = function() {
+                this.style.transform = 'translateY(0)';
+            };
+            
+            // Add new listeners
+            card.addEventListener('mouseenter', card.hoverEnter);
+            card.addEventListener('mouseleave', card.hoverLeave);
         });
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
+    }
+
+    // Initialize on page load and HTMX swaps
+    document.addEventListener('DOMContentLoaded', initializeProductCards);
+    document.addEventListener('htmx:afterSwap', initializeProductCards);
 </script>
+    </div>
+</main>

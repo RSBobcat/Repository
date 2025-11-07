@@ -29,8 +29,22 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'myshop.local', 'www.7Days.com', '7Days.com']
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://7Days.com",
+    "https://www.7Days.com",
+    "https://7Days.com",
+]
+
+# Development settings - disable for local testing
+CSRF_COOKIE_SECURE = False  # True for production
+SESSION_COOKIE_SECURE = False  # True for production
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
 
 # Application definition
 
@@ -46,6 +60,7 @@ INSTALLED_APPS = [
     'users',
     'cart',
     'orders',
+    'payment',
 ]
 
 MIDDLEWARE = [
@@ -148,3 +163,9 @@ SESSION_COOKIE_AGE = 86400  # 30 дней в секундах
 SESSION_SAVE_EVERY_REQUEST = True
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# Payment Settings
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY') 
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+HELEKET_API_KEY = os.getenv('HELEKET_API_KEY', '')
+HELEKET_SECRET_KEY = os.getenv('HELEKET_SECRET_KEY', '')

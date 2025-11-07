@@ -1,49 +1,60 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from django.conf import settings
 from main.models import Product, ProductSize
-from decimal import Decimal
 
 
 class Order(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Ожидает обработки'),
-        ('confirmed', 'Подтвержден'),
-        ('shipped', 'Отправлен'),
-        ('delivered', 'Доставлен'),
-        ('cancelled', 'Отменен'),
-    ]
+    STATUS_CHOICES = (
+        ('pending', 'В ожидании'),
+        ('processing', 'В процессе'),
+        ('shipped', 'Отправлено'),
+        ('delivered', 'Доставлено'),
+        ('cancelled', 'Отменено'),
+    )
+    PAYMENT_PROVIDER_CHOICES = (
+        ('stripe', 'Stripe'),
+        ('heleket', 'Heleket'),
+    )
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone = models.CharField(max_length=20, blank=True)
-    address1 = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='orders')
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField(max_length=254)
+    company = models.CharField(max_length=100, blank=True, null=True)
+    address1 = models.CharField(max_length=100, blank=True, null=True)
+    address2 = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    province = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
     special_instructions = models.TextField(blank=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_provider = models.CharField(max_length=20, choices=PAYMENT_PROVIDER_CHOICES, null=True, blank=True)
+    stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
+    heleket_payment_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Order #{self.id} - {self.first_name} {self.last_name}"
+        return f"Order {self.id} by {self.email}"
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    product_size = models.ForeignKey(ProductSize, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
+    size = models.ForeignKey(ProductSize, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
-    def __str__(self):
-        return f"{self.quantity} x {self.product.name} ({self.product_size.size.name})"
 
-    @property
-    def total_price(self):
+    def __str__(self):
+        return f"{self.product.name} - {self.size.size.name} ({self.quantity})"
+    
+
+    def get_total_price(self):
         return self.price * self.quantity
+    

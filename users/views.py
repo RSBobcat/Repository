@@ -48,11 +48,17 @@ def profile_view(request):
     else:
         form = CustomUserUpdateForm(instance=request.user)
 
+    # Получаем заказы пользователя
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    latest_order = orders.first() if orders.exists() else None
+    
     recommended_products = Product.objects.all().order_by('id')[:3]
 
     return TemplateResponse(request, 'users/profile.html', {
         'form': form,
         'user': request.user,
+        'orders': orders,
+        'latest_order': latest_order,
         'recommended_products': recommended_products
     })
 
@@ -88,6 +94,22 @@ def update_account_details(request):
     if request.headers.get('HX-Request'):
         return HttpResponse(headers={'HX-Redirect': reverse('user:profile')})
     return redirect('users:profile')
+
+
+@login_required(login_url='/users/login')
+def order_detail(request, order_id):
+    """Display order details for a specific order"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order_items = order.items.select_related('product', 'size__size')
+    
+    context = {
+        'order': order,
+        'order_items': order_items
+    }
+    
+    if request.headers.get('HX-Request'):
+        return TemplateResponse(request, 'users/partials/order_detail.html', context)
+    return render(request, 'users/partials/order_detail.html', context)
 
 
 def logout_view(request):

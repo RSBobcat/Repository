@@ -1,0 +1,110 @@
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Заказ #{{ order.id }}</h2>
+        <button 
+            hx-get="{% url 'users:profile' %}" 
+            hx-target="#profile-main-content" 
+            hx-push-url="true"
+            class="text-sm text-teal-600 hover:text-teal-700 font-medium"
+        >
+            ← Назад к профилю
+        </button>
+    </div>
+    
+    <!-- Информация о заказе -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Информация о заказе</h3>
+            <div class="space-y-2 text-sm text-gray-700">
+                <p><span class="font-medium">Дата заказа:</span> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                <p><span class="font-medium">Статус:</span> 
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+                        {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                        {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </p>
+                <p><span class="font-medium">Способ оплаты:</span> 
+                    {% if order.payment_provider == 'stripe' %}
+                        Stripe (Банковская карта)
+                    {% elif order.payment_provider == 'heleket' %}
+                        Heleket
+                    {% else %}
+                        {{ order.payment_provider|default:"Не указан" }}
+                    {% endif %}
+                </p>
+                <p><span class="font-medium">Общая сумма:</span> <span class="text-lg font-bold text-teal-600">₼{{ order.total_price|floatformat:2 }}</span></p>
+            </div>
+        </div>
+        
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Адрес доставки</h3>
+            <div class="space-y-1 text-sm text-gray-700">
+                <p class="font-medium">{{ order.first_name }} {{ order.last_name }}</p>
+                {% if order.company %}
+                    <p>{{ order.company }}</p>
+                {% endif %}
+                <p>{{ order.address1 }}</p>
+                {% if order.address2 %}
+                    <p>{{ order.address2 }}</p>
+                {% endif %}
+                <p>{{ order.city }}{% if order.province %}, {{ order.province }}{% endif %}</p>
+                <p>{{ order.country }} {{ order.postal_code }}</p>
+                {% if order.phone %}
+                    <p class="mt-2"><span class="font-medium">Телефон:</span> {{ order.phone }}</p>
+                {% endif %}
+                <p><span class="font-medium">Email:</span> {{ order.email }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Товары в заказе -->
+    <div class="border-t pt-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Товары в заказе</h3>
+        <div class="space-y-4">
+            {% for item in order_items %}
+                <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                    <div class="flex-shrink-0 w-16 h-16">
+                        {% if item.product.main_image %}
+                            <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover rounded">
+                        {% else %}
+                            <div class="w-full h-full bg-gray-200 rounded flex items-center justify-center">
+                                <span class="text-gray-400 text-xs">Нет фото</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-medium text-gray-900">{{ item.product.name }}</h4>
+                        <p class="text-sm text-gray-600">Размер: {{ item.size.size.name }}</p>
+                        <p class="text-sm text-gray-600">Количество: {{ item.quantity }}</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <p class="text-sm font-medium text-gray-900">₼{{ item.price|floatformat:2 }} × {{ item.quantity }}</p>
+                        <p class="text-sm text-gray-600">= ₼{{ item.get_total_price|floatformat:2 }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-gray-600">В этом заказе нет товаров.</p>
+            {% endfor %}
+        </div>
+        
+        <!-- Итого -->
+        <div class="mt-6 pt-4 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+                <span class="text-lg font-semibold text-gray-900">Итого:</span>
+                <span class="text-xl font-bold text-teal-600">₼{{ order.total_price|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+    
+    {% if order.special_instructions %}
+        <div class="mt-6 pt-4 border-t border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Особые инструкции</h3>
+            <p class="text-sm text-gray-700">{{ order.special_instructions }}</p>
+        </div>
+    {% endif %}
+</div>

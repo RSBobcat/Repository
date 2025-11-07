@@ -18,12 +18,27 @@ class CartMixin:
         if not request.session.session_key:
             request.session.create()
 
-        cart, created = Cart.objects.get_or_create(
-            session_key=request.session.session_key
-        )
+        # Try to get existing cart first
+        cart_id = request.session.get('cart_id')
+        cart = None
+        
+        if cart_id:
+            try:
+                cart = Cart.objects.get(id=cart_id, session_key=request.session.session_key)
+                print(f"DEBUG: Found existing cart {cart.id}")
+            except Cart.DoesNotExist:
+                print(f"DEBUG: Cart {cart_id} not found, creating new one")
+                pass
 
-        request.session['cart_id'] = cart.id
-        request.session.modified = True
+        if not cart:
+            cart, created = Cart.objects.get_or_create(
+                session_key=request.session.session_key
+            )
+            print(f"DEBUG: Cart created/found: {cart.id} (created: {created})")
+            request.session['cart_id'] = cart.id
+            request.session.modified = True
+
+        request.cart = cart
         return cart
     
 
@@ -43,30 +58,102 @@ class CartModalView(CartMixin, View):
 class AddToCartView(CartMixin, View):
     @transaction.atomic
     def post(self, request, slug):
+        print(f"DEBUG: POST request to add product {slug} to cart")
+        print(f"DEBUG: POST data: {request.POST}")
+        print(f"DEBUG: Session key: {request.session.session_key}")
+        
         cart = self.get_cart(request)
+        print(f"DEBUG: Cart ID: {cart.id if cart else 'None'}")
+        
         product = get_object_or_404(Product, slug=slug)
+        
+        # Debug: Check product sizes
+        available_sizes = product.product_sizes.filter(stock__gt=0)
+        print(f"DEBUG: Product {product.name} has {available_sizes.count()} available sizes")
+        for size in available_sizes:
+            print(f"  - Size {size.size.name}: {size.stock} in stock, ProductSize ID: {size.id}")
 
         form = AddToCartForm(request.POST, product=product)
+        
+        # Debug: Check all product sizes (not just available)
+        all_product_sizes = product.product_sizes.all()
+        print(f"DEBUG: Product {product.name} has {all_product_sizes.count()} total sizes:")
+        for size in all_product_sizes:
+            print(f"  - Size {size.size.name}: {size.stock} in stock, ProductSize ID: {size.id}")
+        
+        # Debug: Check form choices
+        if hasattr(form.fields.get('size_id'), 'choices'):
+            print(f"DEBUG: Form size_id choices: {form.fields['size_id'].choices}")
+        else:
+            print(f"DEBUG: size_id field type: {type(form.fields.get('size_id'))}")
+            
+        # Debug: Check what was actually received
+        print(f"DEBUG: Received size_id: {request.POST.get('size_id')}")
+        print(f"DEBUG: Received quantity: {request.POST.get('quantity')}")
 
         if not form.is_valid():
+            print(f"DEBUG: Form errors: {form.errors}")
+            print(f"DEBUG: Form data: {form.data}")
             return JsonResponse({
                 'error': 'Invalid form data',
                 'errors': form.errors,
+                'debug_info': {
+                    'post_data': dict(request.POST),
+                    'form_data': form.data,
+                }
             }, status=400)
         
         size_id = form.cleaned_data.get('size_id')
+        
         if size_id:
             product_size = get_object_or_404(
                 ProductSize,
                 id=size_id,
                 product=product
             )
+            # Проверяем наличие товара после получения product_size
+            if product_size.stock == 0:
+                return JsonResponse({
+                    'error': f'Размер "{product_size.size.name}" временно отсутствует на складе'
+                }, status=400)
         else:
             product_size = product.product_sizes.filter(stock__gt=0).first()
             if not product_size:
-                return JsonResponse({
-                    'error': 'No sizes available'
-                }, status=400)
+                # Check if product has any sizes at all
+                all_sizes = product.product_sizes.all()
+                if all_sizes.exists():
+                    # Product has sizes but no stock
+                    # print(f"DEBUG: No stock for product {product.name}")
+                    return JsonResponse({
+                        'error': f'Товар "{product.name}" временно отсутствует на складе'
+                    }, status=400)
+                else:
+                    # Product has no sizes - check if default ProductSize already exists
+                    print(f"DEBUG: Product has no sizes, checking existing ProductSize")
+                    existing_product_size = product.product_sizes.first()
+                    if existing_product_size:
+                        print(f"DEBUG: Using existing ProductSize: {existing_product_size}")
+                        product_size = existing_product_size
+                    else:
+                        # Create a default size and ProductSize for this product
+                        print(f"DEBUG: Creating new default size for product")
+                        from main.models import Size
+                        try:
+                            default_size, created = Size.objects.get_or_create(
+                                name='Универсальный',
+                                defaults={'display_order': 0}
+                            )
+                            print(f"DEBUG: Default size created/found: {default_size} (created: {created})")
+                            product_size = ProductSize.objects.create(
+                                product=product,
+                                size=default_size,
+                                stock=100  # Default stock
+                            )
+                            print(f"DEBUG: ProductSize created: {product_size}")
+                        except Exception as e:
+                            print(f"ERROR: Failed to create size/product_size: {e}")
+                            return JsonResponse({'error': f'Failed to create size: {str(e)}'}, status=500)
+            
 
         quantity = form.cleaned_data['quantity']
         if product_size.stock < quantity:
@@ -146,6 +233,13 @@ class RemoveCartItemView(CartMixin, View):
             request.session['cart_id'] = cart.id
             request.session.modified = True
 
+            # If it's an HTMX request, return HTML
+            if request.headers.get('HX-Request'):
+                return TemplateResponse(request, 'cart/cart_modal.html', {
+                    'cart': cart,
+                })
+            
+            # Otherwise return JSON
             return JsonResponse({
                 'success': True,
                 'total_items': cart.total_items,

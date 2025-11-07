@@ -13,6 +13,7 @@
         
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #0d9488; /* teal-600 background */
         }
         
         .product-image {
@@ -35,7 +36,7 @@
             left: 0;
             width: 100%;
             height: 1px;
-            background-color: black;
+            background-color: white;
         }
 
         .nav-link.active::after {
@@ -45,7 +46,25 @@
             left: 0;
             width: 100%;
             height: 1px;
-            background-color: black;
+            background-color: white;
+        }
+
+        /* Text pattern styles */
+        .buta-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100%;
+            z-index: -1; /* На самом заднем фоне */
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .buta-pattern {
+                opacity: 0.2;
+            }
         }
 
         /* Mobile menu styles */
@@ -108,12 +127,121 @@
         }
     </style>
 </head>
-<body class="bg-white">
+<body class="bg-teal-600">
+    <!-- 7Days Background Text -->
+    <div class="buta-pattern">
+        <svg width="100%" height="100%" viewBox="0 0 1400 1000" fill="black" xmlns="http://www.w3.org/2000/svg">
+            <!-- 7Days text repeated across the background -->
+            
+            <!-- Row 1 -->
+            <text x="50" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="250" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="450" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="650" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="850" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1050" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1250" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 2 -->
+            <text x="150" y="160" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="350" y="160" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="550" y="160" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="750" y="160" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="950" y="160" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1150" y="160" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 3 -->
+            <text x="50" y="240" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="250" y="240" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="450" y="240" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="650" y="240" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="850" y="240" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1050" y="240" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1250" y="240" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 4 -->
+            <text x="150" y="320" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="350" y="320" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="550" y="320" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="750" y="320" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="950" y="320" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1150" y="320" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 5 -->
+            <text x="50" y="400" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="250" y="400" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="450" y="400" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="650" y="400" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="850" y="400" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1050" y="400" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1250" y="400" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 6 -->
+            <text x="150" y="480" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="350" y="480" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="550" y="480" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="750" y="480" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="950" y="480" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1150" y="480" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 7 -->
+            <text x="50" y="560" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="250" y="560" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="450" y="560" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="650" y="560" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="850" y="560" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1050" y="560" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1250" y="560" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 8 -->
+            <text x="150" y="640" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="350" y="640" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="550" y="640" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="750" y="640" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="950" y="640" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1150" y="640" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 9 -->
+            <text x="50" y="720" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="250" y="720" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="450" y="720" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="650" y="720" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="850" y="720" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1050" y="720" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1250" y="720" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 10 -->
+            <text x="150" y="800" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="350" y="800" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="550" y="800" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="750" y="800" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="950" y="800" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1150" y="800" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 11 -->
+            <text x="50" y="880" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="250" y="880" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="450" y="880" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="650" y="880" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="850" y="880" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1050" y="880" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1250" y="880" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            
+            <!-- Row 12 -->
+            <text x="150" y="960" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="350" y="960" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="550" y="960" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="750" y="960" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="950" y="960" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+            <text x="1150" y="960" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="black" opacity="0.35">7Days</text>
+        </svg>
+    </div>
+    
     <!-- Mobile Menu Overlay -->
     <div id="overlay" class="overlay fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
     
     <!-- Mobile Menu -->
-    <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 w-80 h-full bg-white z-50 md:hidden shadow-lg">
+    <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 w-80 h-full bg-teal-600 z-50 md:hidden shadow-lg">
         <div class="p-6">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-lg font-bold tracking-tight text-left">
@@ -132,7 +260,7 @@
                    hx-get="{% url 'main:index' %}" 
                    hx-target="#main-content" 
                    hx-push-url="true"
-                   class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
+                   class="mobile-nav-link block text-lg font-medium text-white hover:text-teal-200 py-2 border-b border-teal-400">
                    Главная страница
                 </a>
                 {% for category in categories %}
@@ -140,22 +268,22 @@
                    hx-get="{% url 'main:catalog' category.slug %}" 
                    hx-target="#main-content" 
                    hx-push-url="true"
-                   class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200 {% if current_category == category.slug %}active{% endif %}">
+                   class="mobile-nav-link block text-lg font-medium text-white hover:text-teal-200 py-2 border-b border-teal-400 {% if current_category == category.slug %}active{% endif %}">
                    {{ category.name|upper }}
                 </a>
                 {% endfor %}
             </nav>
             
             <div class="mt-8 space-y-4">
-                <a href="#" class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">Поиск</a>
+                <a href="#" class="block text-sm font-medium text-white hover:text-teal-200 py-2">Поиск</a>
                 <a href="{% url 'users:profile' %}" 
                 hx-get="{% url 'users:profile' %}" 
                 hx-target="#main-content" 
                 hx-push-url="true"
-                class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
+                class="text-sm font-medium text-white uppercase hover:text-teal-200">
                     Аккаунт
                 </a>
-                <a href="#" id="mobileCart" class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">Корзина (0)</a>
+                <a href="#" id="mobileCart" class="block text-sm font-medium text-white hover:text-teal-200 py-2">Корзина (0)</a>
             </div>
         </div>
     </div>
@@ -177,7 +305,7 @@
                        hx-get="{% url 'main:index' %}" 
                        hx-target="#main-content" 
                        hx-push-url="true">
-                        <h1 class="text-sm sm:text-lg font-bold tracking-tight text-left">
+                        <h1 class="text-sm sm:text-lg font-bold tracking-tight text-left text-white">
                             7Days <br>
                             
                         </h1>
@@ -191,7 +319,7 @@
                        hx-get="{% url 'main:catalog' category.slug %}" 
                        hx-target="#main-content" 
                        hx-push-url="true"
-                       class="nav-link text-sm font-medium text-gray-900 hover:text-gray-700 {% if current_category == category.slug %}active{% endif %}">
+                       class="nav-link text-sm font-medium text-white hover:text-teal-200 {% if current_category == category.slug %}active{% endif %}">
                        {{ category.name|upper }}
                     </a>
                     {% endfor %}
@@ -212,10 +340,10 @@
                     hx-get="{% url 'users:profile' %}" 
                     hx-target="#main-content" 
                     hx-push-url="true"
-                    class="text-sm font-medium text-gray-900 uppercase hover:text-gray-600">
+                    class="text-sm font-medium text-white uppercase hover:text-teal-200">
                         Аккаунт
                     </a>
-                    <a href="#" id="desktopCart" class="text-sm font-medium text-gray-900 hover:text-gray-700">Корзина (0)</a>
+                    <a href="#" id="desktopCart" class="text-sm font-medium text-white hover:text-teal-200">Корзина (0)</a>
                 </div>
                 
                 <!-- Mobile Cart Icon -->
@@ -228,18 +356,18 @@
     <div id="cart-container"></div>
 
     <!-- Loading Indicator -->
-    <div class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-black z-50"></div>
+    <div class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-teal-500 z-50"></div>
 
     <!-- Main Content -->
-    <div id="main-content">
+    <div id="main-content" class="min-h-screen">
         {% block content %}
         <!-- Default home content -->
-        <main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main class="mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
             <div class="text-center py-20">
-                <h2 class="text-4xl font-bold tracking-tight text-gray-900 mb-4">
+                <h2 class="text-4xl font-bold tracking-tight text-white mb-4 drop-shadow-lg">
                     7Days - Ваш стиль, ваша история
                 </h2>
-                <p class="text-lg text-gray-600 mb-8">
+                <p class="text-lg text-white mb-8 drop-shadow-md">
                     Выберите категорию чтобы посмотреть нашу коллекцию
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
@@ -248,8 +376,8 @@
                        hx-get="{% url 'main:catalog' category.slug %}" 
                        hx-target="#main-content" 
                        hx-push-url="true"
-                       class="block p-8 border border-gray-200 hover:border-gray-300 transition-colors">
-                        <h3 class="text-xl font-bold">{{ category.name|upper }}</h3>
+                       class="block p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                        <h3 class="text-xl font-bold text-teal-700">{{ category.name|upper }}</h3>
                     </a>
                     {% endfor %}
                 </div>
@@ -298,7 +426,7 @@
             updateCartCount();
             
             function updateHeaderCartCount(count) {
-                const cartText = `CART (${count})`;
+                const cartText = `Корзина (${count})`;
                 if (desktopCart) desktopCart.textContent = cartText;
                 if (mobileCart) mobileCart.textContent = cartText;
                 if (mobileCartHeader) mobileCartHeader.textContent = cartText;
@@ -319,14 +447,26 @@
                 });
             }
     
-            [desktopCart, mobileCart, mobileCartHeader].forEach(cartLink => {
-                if (cartLink) {
-                    cartLink.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        openCart();
-                    });
-                }
-            });
+            // Function to initialize cart buttons
+            function initializeCartButtons() {
+                const desktopCart = document.getElementById('desktopCart');
+                const mobileCart = document.getElementById('mobileCart');
+                const mobileCartHeader = document.getElementById('mobileCartHeader');
+                
+                [desktopCart, mobileCart, mobileCartHeader].forEach(cartLink => {
+                    if (cartLink) {
+                        // Remove existing listeners to avoid duplicates
+                        cartLink.removeEventListener('click', openCart);
+                        cartLink.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            openCart();
+                        });
+                    }
+                });
+            }
+            
+            // Initialize on load
+            initializeCartButtons();
     
             // Close mobile menu on window resize
             window.addEventListener('resize', function() {
@@ -338,6 +478,8 @@
             // Update active navigation links after HTMX requests
             document.addEventListener('htmx:afterSettle', function() {
                 updateActiveNavLinks();
+                initializeCartButtons(); // Reinitialize cart buttons after HTMX
+                updateCartCount(); // Update cart count
             });
     
             function updateActiveNavLinks() {
@@ -362,14 +504,26 @@
         
         // Global function to update cart count
         window.updateHeaderCartCount = function(count) {
-            const desktopCart = document.getElementById('desktopCart');
-            const mobileCart = document.getElementById('mobileCart');
-            const mobileCartHeader = document.getElementById('mobileCartHeader');
-            const cartText = `CART (${count})`;
-            
-            if (desktopCart) desktopCart.textContent = cartText;
-            if (mobileCart) mobileCart.textContent = cartText;
-            if (mobileCartHeader) mobileCartHeader.textContent = cartText;
+            if (count !== undefined) {
+                const desktopCart = document.getElementById('desktopCart');
+                const mobileCart = document.getElementById('mobileCart');
+                const mobileCartHeader = document.getElementById('mobileCartHeader');
+                const cartText = `КОРЗИНА (${count})`;
+                
+                if (desktopCart) desktopCart.textContent = cartText;
+                if (mobileCart) mobileCart.textContent = cartText;
+                if (mobileCartHeader) mobileCartHeader.textContent = cartText;
+            } else {
+                // Fetch current cart count
+                fetch('{% url "cart:cart_count" %}')
+                .then(response => response.json())
+                .then(data => {
+                    window.updateHeaderCartCount(data.total_items);
+                })
+                .catch(error => {
+                    console.error('Ошибка обновления корзины:', error);
+                });
+            }
         };
     </script>
 </body>
